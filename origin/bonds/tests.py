@@ -2,6 +2,9 @@ from rest_framework.test import APISimpleTestCase
 from unittest import TestCase, mock
 from unittest.mock import patch
 from bonds.utils import getLeiLegalName
+from django.test import TestCase as DTestCase
+from bonds.models import Bond
+from django.contrib.auth import get_user_model
 
 
 class HelloWorld(APISimpleTestCase):
@@ -33,3 +36,24 @@ class TestUtils(TestCase):
     def tes_getLeiLegalNameNotOk(self, m_get):
         m_get.return_value - mock.Mock(ok=False)
         self.assertEqual(None, getLeiLegalName(""))
+
+
+class TestBonds(DTestCase):
+
+    def setUp(self):
+        self.User = get_user_model()
+        self.User.objects.create(username="test", password="test")
+
+    @mock.patch("bonds.models.getLeiLegalName")
+    def test_bondCreate(self, m_getLegalName):
+        m_getLegalName.return_value = "TEST VAL"
+        user = self.User.objects.get(username="test")
+        bond = Bond.objects.create(
+            isin="ISIN",
+            size=123,
+            currency="GBP",
+            maturity="2020-01-01",
+            lei="TESTLEI",
+            user=user
+        )
+        self.assertEqual("TESTVAL", bond.legal_name)
