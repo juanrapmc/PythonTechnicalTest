@@ -11,10 +11,12 @@ class HelloWorld(APIView):
 
 
 class BondList(generics.ListCreateAPIView):
-    queryset = Bond.objects.all()
     serializer_class = BondSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        return Bond.objects.filter(user=user)
 
     def perform_create(self, serializer):
         """
