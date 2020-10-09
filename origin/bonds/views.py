@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import mixins, generics, permissions
+from rest_framework import mixins, generics, permissions, filters
 from bonds.models import Bond
 from bonds.serializers import BondSerializer
 
@@ -15,8 +15,14 @@ class BondList(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        queryset = Bond.objects.all()
         user = self.request.user
-        return Bond.objects.filter(user=user)
+        legal_name = self.request.query_params.get("legal_name", None)
+        if legal_name is not None:
+            queryset = Bond.objects.filter(user=user, legal_name=legal_name)
+        else:
+            queryset = Bond.objects.filter(user=user)
+        return queryset
 
     def perform_create(self, serializer):
         """
