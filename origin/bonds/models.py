@@ -1,6 +1,6 @@
 from django.db import models
 from bonds.utils import getLeiLegalName
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, APIException
 
 
 class Bond(models.Model):
@@ -13,9 +13,12 @@ class Bond(models.Model):
     legal_name = models.CharField(max_length=100)
 
     def save(self, *args, **kwargs):
-        legal_name = getLeiLegalName(self.lei)
+        try:
+            legal_name = getLeiLegalName(self.lei)
+        except:
+            raise APIException()
         if legal_name:
-            self.legal_name = legal_name
+            self.legal_name = legal_name.replace(" ", "")
         else:
-            raise ValidationError
+            raise ValidationError("Legal name not found, please check LEI")
         super(Bond, self).save(*args, **kwargs)
