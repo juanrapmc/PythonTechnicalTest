@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ValidationError
 import requests
 import os
 
@@ -18,8 +19,9 @@ def getLeiLegalName(lei):
         resp = requests.get(LEI_API_URL, params={"lei": lei})
         data = resp.json()
         if not resp.ok or not data:
-            raise Exception()
+            return None
 
         return data[0]["Entity"]["LegalName"]["$"]
-    except Exception:
-        return None
+    except Exception as e:
+        # TODO: log error
+        raise Exception()
